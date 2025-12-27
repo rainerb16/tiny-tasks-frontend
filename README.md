@@ -41,3 +41,10 @@ http://localhost:5173
 
 ## Backend Dependency
 http://localhost:3000
+
+## Design Decisions
+
+- **API helper layer (`src/api/tasks.js`):** Keeps components focused on UI/state while centralizing request + error handling.
+- **Optimistic UI for deletes/toggles:** Improves perceived speed; rolls back state if the request fails.
+- **Backend as source of truth:** After create/update, tasks are re-fetched to avoid client/server drift.
+- **Simple state model:** Uses React state + effects (no extra libraries) to keep the project easy to read and maintain.

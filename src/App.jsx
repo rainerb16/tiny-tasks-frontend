@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-
-// Backend endpoint
-const API_URL = "http://localhost:3000/tasks";
+import {
+  getTasks,
+  createTask,
+  updateTask as apiUpdateTask,
+  deleteTask as apiDeleteTask,
+} from "./api/tasks";
 
 function App() {
   /* ---------- State ---------- */
@@ -10,8 +13,9 @@ function App() {
 
   const [loading, setLoading] = useState(true); // Initial fetch
   const [saving, setSaving] = useState(false); // POST state
-  const [updating, setUpdating] = useState(false); // PATCH state
+  const [updating, setUpdating] = useState(false); // edit title
   const [deletingId, setDeletingId] = useState(null); // Per-item DELETE
+  const [togglingId, setTogglingId] = useState(null); // Per-item completed toggle
 
   const [editingId, setEditingId] = useState(null); // Which task is being edited
   const [editTitle, setEditTitle] = useState(""); // Edit input value
@@ -24,12 +28,7 @@ function App() {
     setError("");
 
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || `Load failed (${res.status})`);
-      }
-      const data = await res.json();
+      const data = await getTasks();
       setTasks(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err?.message || "Failed to load tasks");
@@ -53,17 +52,7 @@ function App() {
     setError("");
 
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: trimmed }),
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || `Create failed (${res.status})`);
-      }
-
+      await createTask(trimmed);
       setTitle("");
       await loadTasks(); // keep backend as source of truth
     } catch (err) {
@@ -75,6 +64,8 @@ function App() {
 
   /* ---------- Delete ---------- */
   const deleteTask = async (id) => {
+    if (!id) return;
+
     setDeletingId(id);
     setError("");
 
@@ -82,12 +73,7 @@ function App() {
     setTasks(prev.filter((t) => (t.id ?? t._id) !== id));
 
     try {
-      const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || `Delete failed (${res.status})`);
-      }
+      await apiDeleteTask(id);
     } catch (err) {
       setTasks(prev); // rollback on failure
       setError(err?.message || "Failed to delete task");
@@ -110,8 +96,8 @@ function App() {
     setError("");
   };
 
-  /* ---------- Update (PATCH) ---------- */
-  const updateTask = async (id) => {
+  /* ---------- Update title ---------- */
+  const updateTaskTitle = async (id) => {
     const trimmed = editTitle.trim();
     if (!trimmed) return;
 
@@ -119,23 +105,40 @@ function App() {
     setError("");
 
     try {
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: trimmed }),
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || `Update failed (${res.status})`);
-      }
-
+      await apiUpdateTask(id, { title: trimmed });
       await loadTasks();
       cancelEdit();
     } catch (err) {
       setError(err?.message || "Failed to update task");
     } finally {
       setUpdating(false);
+    }
+  };
+
+  /* ---------- Toggle completed ---------- */
+  const toggleCompleted = async (task) => {
+    const id = task.id ?? task._id;
+    if (!id) return;
+
+    setTogglingId(id);
+    setError("");
+
+    const prev = tasks;
+
+    // UI update
+    setTasks(
+      prev.map((t) =>
+        (t.id ?? t._id) === id ? { ...t, completed: !t.completed } : t
+      )
+    );
+
+    try {
+      await apiUpdateTask(id, { completed: !task.completed });
+    } catch (err) {
+      setTasks(prev); // rollback
+      setError(err?.message || "Failed to toggle completed");
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -146,7 +149,7 @@ function App() {
     <div style={{ padding: 16 }}>
       <h1>Tiny Tasks</h1>
 
-      {/* Show errors but keep UI visible for debugging */}
+      {/* Show errors but keep UI visible */}
       {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
 
       {/* Add task */}
@@ -182,7 +185,7 @@ function App() {
                     <button
                       type="button"
                       disabled={updating}
-                      onClick={() => updateTask(id)}
+                      onClick={() => updateTaskTitle(id)}
                     >
                       {updating ? "Saving..." : "Save"}
                     </button>
@@ -197,7 +200,21 @@ function App() {
                   </>
                 ) : (
                   <>
-                    <span>{task.title}</span>
+                    <input
+                      type="checkbox"
+                      checked={!!task.completed}
+                      disabled={togglingId === id}
+                      onChange={() => toggleCompleted(task)}
+                    />
+
+                    <span
+                      style={{
+                        textDecoration: task.completed ? "line-through" : "none",
+                        opacity: task.completed ? 0.6 : 1,
+                      }}
+                    >
+                      {task.title}
+                    </span>
 
                     <button type="button" onClick={() => startEdit(task)}>
                       Edit
