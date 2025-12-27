@@ -1,0 +1,43 @@
+# Tiny Tasks – Frontend
+
+React frontend for the Tiny Tasks app.  
+This project focuses on clean UI state handling and consuming a REST API (loading/error/empty states, CRUD actions, and readable code structure).
+
+---
+
+## Tech Stack
+- React (Vite)
+- JavaScript
+- Fetch API
+
+---
+
+## Features
+- View all tasks
+- Create a task
+- Edit task title (PATCH)
+- Delete a task (optimistic UI)
+- Loading, error, and empty states
+- API logic extracted into a small helper (`src/api/tasks.js`)
+
+---
+
+## Getting Started
+
+Prerequisites
+- Node.js 18+
+- The backend API running locally
+
+## Installation
+git clone https://github.com/YOUR_USERNAME/tiny-tasks-frontend.git
+cd tiny-tasks-frontend
+npm install
+
+## Run the App
+npm run dev
+
+Vite will start the app at:
+http://localhost:5173
+
+## Backend Dependency
+http://localhost:3000
