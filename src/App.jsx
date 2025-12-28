@@ -146,11 +146,11 @@ function App() {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1>Tiny Tasks</h1>
+    <div className="app">
+      <h1 className="main_title">Tiny Tasks</h1>
 
       {/* Show errors but keep UI visible */}
-      {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
+      {error ? <p className="error">{error}</p> : null}
 
       {/* Add task */}
       <form onSubmit={addTask} style={{ marginBottom: 12 }}>
@@ -173,7 +173,6 @@ function App() {
             return (
               <li
                 key={id}
-                style={{ display: "flex", gap: 8, alignItems: "center" }}
               >
                 {editingId === id ? (
                   <>
@@ -184,6 +183,7 @@ function App() {
 
                     <button
                       type="button"
+                      className="disabled"
                       disabled={updating}
                       onClick={() => updateTaskTitle(id)}
                     >
@@ -208,10 +208,7 @@ function App() {
                     />
 
                     <span
-                      style={{
-                        textDecoration: task.completed ? "line-through" : "none",
-                        opacity: task.completed ? 0.6 : 1,
-                      }}
+                      className={`task-title ${task.completed ? "completed" : ""}`}
                     >
                       {task.title}
                     </span>
@@ -222,6 +219,7 @@ function App() {
 
                     <button
                       type="button"
+                      className="secondary"
                       disabled={deletingId === id}
                       onClick={() => deleteTask(id)}
                     >

@@ -3,12 +3,17 @@
 React frontend for the Tiny Tasks app.  
 This project focuses on clean UI state handling and consuming a REST API (loading/error/empty states, CRUD actions, and readable code structure).
 
+## Screenshot
+
+![Tiny Tasks UI](img/screenshot.png)
+
 ---
 
 ## Tech Stack
 - React (Vite)
 - JavaScript
 - Fetch API
+- Sass
 
 ---
 
