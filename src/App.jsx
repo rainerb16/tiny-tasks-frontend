@@ -8,6 +8,7 @@ import {
 
 function App() {
   /* ---------- State ---------- */
+  const [loadMsg, setLoadMsg] = useState("⏳ Waking up the server… loading can take up to 60 seconds on free-tier hosting.");
   const [tasks, setTasks] = useState([]); // Task list
   const [title, setTitle] = useState(""); // Add input value
 
@@ -37,9 +38,24 @@ function App() {
     }
   };
 
-  // Fetch once on mount
+  // Fetch once on mount, loading message
   useEffect(() => {
+    let mounted = true;
+
+    const timer = setTimeout(() => {
+      if (mounted) {
+        setLoadMsg(
+          "⏳ Still starting up… free-tier hosting can take up to 60 seconds on the first visit."
+        );
+      }
+    }, 10000);
+
     loadTasks();
+
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   /* ---------- Create ---------- */
@@ -143,8 +159,26 @@ function App() {
   };
 
   /* ---------- UI states ---------- */
-  if (loading) return <p>Loading...</p>;
+    if (loading) {
+    return (
+      <div className="app">
+        <h1 className="main_title">Tiny Tasks</h1>
+        <p className="loading">{loadMsg}</p>
+        <p className="loading_msg">
+          If it’s your first visit, the backend may need a short warm-up.
+        </p>
 
+        {/* Optional: give them something to do */}
+        <button
+          className="loading_btn"
+          type="button"
+          onClick={loadTasks}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="app">
       <h1 className="main_title">Tiny Tasks</h1>

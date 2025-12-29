@@ -36,6 +36,21 @@ h1 {
   font-size: 2rem;
 }
 
+/* ---------- Loading Message ---------- */
+.loading {
+  margin-top: 1rem;
+}
+
+.loading_msg {
+  opacity: 0.75;
+  margin-top: 0.5rem;
+}
+
+.loading_btn {
+  margin-top: 1rem;
+}
+
+
 /* ---------- Form ---------- */
 form {
   display: flex;
